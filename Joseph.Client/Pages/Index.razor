@@ -1,0 +1,229 @@
+﻿@page "/"
+@using Joseph.Data.Entities
+@using Joseph.Client.Extensions
+@using Joseph.Enums
+@using Microsoft.EntityFrameworkCore.Metadata.Internal
+@using OneOf
+@inject NavigationManager _navigationManager
+<style>
+    .wrapClassName{
+        max-width: 700px !important;
+        width: 100% !important;
+    }
+</style>
+<div style="max-width: 1000px; margin: auto; display: flex; flex-direction: column; margin-top: 35px;">
+    <Row Style="margin: 15px 0;">
+        <AntDesign.Col Lg="8" Md="12" Xs="18">
+            <Search Placeholder="Search vacancies" @bind-Value="_searchText" OnSearch="OnSearch" Loading="_searching"/>
+        </AntDesign.Col>
+        <AntDesign.Col Lg="@(new EmbeddedProperty() {Span = 4, Offset = 12})"
+                       Md="new EmbeddedProperty() {Span = 5, Offset = 7}"
+                       Xs="new EmbeddedProperty() {Span = 5, Offset = 1}">
+            @if (_filters.Count == 0)
+            {
+                <Tooltip Style="width: 100%;" Placement="Placement.Top" Title="@("Not have filters")" ArrowPointAtCenter="true">
+                    <Button Disabled Style="width: 100%;"
+                            Type="@ButtonType.Primary">
+                        Filters
+                    </Button>
+                </Tooltip>
+            }
+            else
+            {
+                <Button Style="width: 100%;"
+                        Type="@ButtonType.Primary"
+                        OnClick="_ => _visibleDrawer = true">
+                    Filters
+                </Button>
+            }
+        </AntDesign.Col>
+    </Row>
+    @if (_jobs is not null && _jobs.Count > 0)
+    {
+        @foreach (Job job in _jobs)
+        {
+            <Card Title="@job.Name">
+                <Extra>
+                    <AuthorizeView>
+                        <Authorized>
+                            <Button Icon="@IconType.Outline.Heart" Shape="@ButtonShape.Circle"></Button>
+                        </Authorized>
+                    </AuthorizeView>
+                </Extra>
+                <Body>
+                <Content>
+                    <Row>
+                        <AntDesign.Col
+                            Md="8"
+                            Span="24">
+                            <Text Style="font-weight: bold;">Hours a week:</Text>
+                            <Text>@job.HoursWeek.ToString()</Text>
+                        </AntDesign.Col>
+                        <AntDesign.Col Md="8" Span="24">
+                            <Text Style="font-weight: bold;">Number of hired people:</Text>
+                            <Text>@job.NumberOfHiredPeople.GetDisplayName()</Text>
+                        </AntDesign.Col>
+                        <AntDesign.Col Md="8" Span="24">
+                            <Text Style="font-weight: bold;">Location:</Text>
+                            <Text>@job.Location</Text>
+                        </AntDesign.Col>
+                    </Row>
+                    <Row Style="margin-top: 10px;">
+                        @foreach (JobType jobType in job.JobTypes)
+                        {
+                            <Tag>@jobType.Name</Tag>
+                        }
+                    </Row>
+                    <Row>
+                        <AntDesign.Col Span="24" Style="text-align: justify;">
+                            <Text Style="display: -webkit-box;
+                                     -webkit-line-clamp: 5;
+                                     -webkit-box-orient: vertical;
+                                     width: 100%;
+                                     overflow: hidden;
+                                     text-overflow: ellipsis;
+                                     margin-top: 10px;">
+                                @job.Description
+                            </Text>
+                        </AntDesign.Col>
+                    </Row>
+                    <AuthorizeView>
+                        <Authorized>
+                            <Row Style="margin-top: 10px;">
+                                <AntDesign.Col Md="new EmbeddedProperty() {Span = 3, Offset = 16}"
+                                               Sm="new EmbeddedProperty() {Span = 6, Offset = 10}"
+                                               Xs="new EmbeddedProperty() {Span = 8, Offset = 0}">
+                                    <Button Style="width: 100%;" Type="@ButtonType.Link"
+                                            OnClick="@(() => _navigationManager.NavigateTo($"vacancy/{job.Id}"))">
+                                        More
+                                    </Button>
+                                </AntDesign.Col>
+                                <AntDesign.Col Md="new EmbeddedProperty() {Span = 5}"
+                                               Sm="new EmbeddedProperty() {Span = 8}"
+                                               Xs="new EmbeddedProperty() {Span = 16}">
+                                    @{
+                                        bool isSubmitted = _myAnswers
+                                            .Contains(_myAnswers.FirstOrDefault(a => a.JobId == job.Id));
+
+                                        bool isEmployer = user?.IsInRole("Employer") ?? false;
+
+                                    }
+                                    <Button Style="width: 100%;" Disabled="@(isSubmitted || isEmployer)" OnClick="() => SelectJob(job.Id)">
+                                        @if (isEmployer)
+                                        {
+                                            <span>You are employer</span>
+                                        }
+                                        else
+                                        {
+                                            if (isSubmitted)
+                                            {
+                                                <span>This job have answer</span>
+                                            }
+                                            else
+                                            {
+                                                <span>Submit a Proposal</span>
+                                            }
+                                        }
+                                    </Button>
+                                </AntDesign.Col>
+                            </Row>
+                        </Authorized>
+                        <NotAuthorized>
+                            <Row Style="margin-top: 10px;">
+                                <AntDesign.Col
+                                    Md="new EmbeddedProperty() {Span = 2, Offset = 22}"
+                                    Sm="new EmbeddedProperty() {Span = 3, Offset = 21}"
+                                    Xs="new EmbeddedProperty() {Span = 4, Offset = 20}"
+                                    Style="display: flex; justify-content: right;">
+                                    <Button Style="text-align: right; padding-right: 0;" Type="@ButtonType.Link"
+                                            OnClick="@(() => _navigationManager.NavigateTo($"vacancy/{job.Id}"))">
+                                        More
+                                    </Button>
+                                </AntDesign.Col>
+                            </Row>
+                        </NotAuthorized>
+                    </AuthorizeView>
+                </Content>
+                </Body>
+            </Card>
+        }
+    }
+    else
+    {
+        <Empty Style="width: 100%; background: white; margin: 0; padding: 40px 0;">
+            <DescriptionTemplate>
+                <span>There is no vacancies</span>
+            </DescriptionTemplate>
+        </Empty>
+    }
+</div>
+
+<Modal Title="@_selectJob.Name"
+       Visible="@_visible"
+       OnOk="@HandleOk"
+       OnCancel="@HandleCancel"
+       ConfirmLoading="@_confirmLoading">
+    <TextArea @bind-Value="_answer"  MinRows="5" Placeholder="Your message"></TextArea>
+</Modal>
+
+<Drawer Closable="true" WrapClassName="wrapClassName" Visible="_visibleDrawer" Title='("Filters")' OnClose="_ => _visibleDrawer = false">
+    <Template style="height:90%;">
+        @foreach (Filter filter in _filters)
+        {
+            <Row Gutter="16">
+                <AntDesign.Col Span="24">
+                    <Text>@filter.Name</Text>
+                    @if (filter.TypeFilter == TypeFilter.CheckBox)
+                    {
+                        <CheckboxGroup Style="width:100%" OnChange="(arg) => ChangeFilters(arg, filter.Name, filter.Property, filter.TypeFilter)">
+                            @foreach (string filterValue in filter.Values)
+                            {
+                                <Checkbox Label="@filterValue">@filterValue</Checkbox>
+                            }
+                        </CheckboxGroup>
+                    }
+                    else if (filter.TypeFilter == TypeFilter.MinMax)
+                    {
+                        <Row>
+                            <AntDesign.Col Md="6" Sm="9" Xs="12">
+                                <AntDesign.InputNumber Style="width: 100%;"
+                                                       Min="Convert.ToInt32(filter.Values[0])"
+                                                       Max="Convert.ToInt32(filter.Values[1])"
+                                                       PlaceHolder="Min"
+                                                       TValue="int?"
+                                                       OnChange="@(
+    (e) => ChangeMinMaxFilter(e, filter.Name, "Min", filter.Property))"/>
+                            </AntDesign.Col>
+                            <AntDesign.Col Span="6" Sm="9" Xs="12">
+                                <AntDesign.InputNumber Style="width: 100%;"
+                                                       Min="Convert.ToInt32(filter.Values[0])"
+                                                       Max="Convert.ToInt32(filter.Values[1])"
+                                                       PlaceHolder="Max"
+                                                       TValue="int?"
+                                                       OnChange="@((e) => ChangeMinMaxFilter(e, filter.Name, "Max", filter.Property))"/>
+                            </AntDesign.Col>
+                        </Row>
+                    }
+                    else if (filter.TypeFilter == TypeFilter.Enums)
+                    {
+                        <CheckboxGroup Style="width:100%" OnChange="(arg) => ChangeFilters(arg, filter.Name, filter.Property, filter.TypeFilter)">
+                            @foreach (string filterValue in filter.Values)
+                            {
+                                <Checkbox
+                                    Label="@filterValue">
+                                    @(Enum.Parse<NumberOfHiredPeople>(filterValue).GetDisplayName())
+                                </Checkbox>
+                            }
+                        </CheckboxGroup>
+                    }
+                </AntDesign.Col>
+            </Row>
+            <br/>
+        }
+        <Row>
+            <AntDesign.Col Sm="10" Xs="12">
+                <Button Style="width: 100%;" OnClick="ApplyFilters" Type="primary">Apply filters</Button>
+            </AntDesign.Col>
+        </Row>
+    </Template>
+</Drawer>

@@ -1,0 +1,21 @@
+﻿@page "/account"
+
+@if (user is not null)
+{
+    @if (user.IsInRole("Employer"))
+    {
+        <Employer />
+    }
+    else if(user.IsInRole("Candidate"))
+    {
+        <Candidate />
+    }
+    else if (user.IsInRole("Admin"))
+    {
+        <Admin />
+    }
+    else
+    {
+        <span>You are unauthorized</span>
+    }
+}

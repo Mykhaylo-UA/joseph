@@ -1,0 +1,50 @@
+﻿@page "/login"
+
+<PageTitle>Login</PageTitle>
+
+<Content>
+    <Space Direction="DirectionVHType.Vertical"
+        Style="background: white; max-width: 550px; padding: 20px; margin: 30px auto; border-radius: 5px;
+box-shadow: 0 2px 20px 2px rgba(0,0,0,0.1); display: block;">
+        <Title Level="2" Style="text-align: center">Login</Title>
+        <Row Class="rowMargin">
+            <label style="font-size: 16px;" for="email">Email:</label>
+            <Input Id="email" 
+                   Placeholder="Email" 
+                   Size="@InputSize.Large" 
+                   @bind-Value="@Email" 
+                   OnInput="ChangeEmail" 
+                   OnkeyDown="EnterKeyDown"/>
+        </Row>
+        @foreach (string error in ErrorsEmail)
+        {
+            <Paragraph Style="margin: 0"  Type="danger">@error</Paragraph>
+        }
+        <Row Class="rowMargin">
+            <label style="font-size: 16px;" for="email">Password:</label>
+            <InputPassword 
+                Placeholder="Password" 
+                Size="@InputSize.Large" 
+                @bind-Value="@Password" 
+                OnInput="ChangePassword"
+                OnkeyDown="EnterKeyDown"></InputPassword>
+        </Row>
+        @foreach (string error in ErrorsPassword)
+        {
+            <Paragraph Style="margin: 0" Type="danger">@error</Paragraph>
+        }
+
+        <Space Style="width: 100%;" Direction="DirectionVHType.Vertical" Align="center">
+                                    <Button
+                                        Loading="@Loading"
+                                        Size="@ButtonSize.Large"
+                                        Disabled="@($"{Email}".Trim() == "" || $"{Password}".Trim() == "" || ErrorsEmail.Count() != 0 || ErrorsPassword.Count() != 0)"
+                                        Type="@ButtonType.Primary"
+                                        HtmlType="submit"
+                                        Style="width: 200px; margin-bottom: 15px; margin-top:15px"
+                                        OnClick="ExecuteLogin">
+                Login
+            </Button>
+            <Paragraph Style="text-align: center;">No account? Please click <a href="/register">here</a> to create one.</Paragraph></Space>
+    </Space>
+</Content>

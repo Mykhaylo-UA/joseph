@@ -1,0 +1,94 @@
+﻿@page "/register"
+
+<PageTitle>Registration</PageTitle>
+<style>
+    .radioGroupFullWidth{
+        width: 100%;
+    }
+    .radio50Width{
+        width:  50%;
+        text-align: center;
+    }
+    
+</style>
+<Content>
+    <Space Direction="DirectionVHType.Vertical"
+        Style="background: white; max-width: 550px; padding: 20px; margin: 30px auto; border-radius: 5px;
+box-shadow: 0 2px 20px 2px rgba(0,0,0,0.1); display: block;">
+        <Title Level="2" Style="text-align: center">Registration</Title>
+        <Row Class="rowMargin">
+            <label style="font-size: 16px;" for="emailId">Email:</label>
+            <Input Id="emailId" 
+                   Placeholder="Email" 
+                   Size="@InputSize.Large" 
+                   @bind-Value="@Email" 
+                   OnInput="ChangeEmail"
+                   OnkeyDown="EnterKeyDown"
+            />
+        </Row>
+        @foreach (string error in ErrorsEmail)
+                {
+                    <Paragraph Style="margin: 0"  Type="danger">@error</Paragraph>
+                }
+        <Row Class="rowMargin">
+            <label style="font-size: 16px;" for="passwordId">Password:</label>
+            <InputPassword 
+                Id="passwordId"
+                Placeholder="Password" 
+                Size="@InputSize.Large" 
+                @bind-Value="@Password" 
+                OnInput="ChangePassword"
+                OnkeyDown="EnterKeyDown"/>
+        </Row>
+        @foreach (string error in ErrorsPassword)
+                {
+                    <Paragraph Style="margin: 0"  Type="danger">@error</Paragraph>
+                }
+        <Row Class="rowMargin">
+            <label style="font-size: 16px;" for="confirmPasswordId">Confirm password:</label>
+            <InputPassword 
+                Id="confirmPasswordId"
+                Placeholder="Confirm password" 
+                Size="@InputSize.Large" 
+                @bind-Value="@ConfirmPassword" 
+                OnInput="StateHasChanged"
+                OnkeyDown="EnterKeyDown"/>
+        </Row>
+        @if (ErrorsPassword.Count == 0 && Password != ConfirmPassword)
+        {
+            <Row>
+                <Text Type="danger">Passwords do not match</Text>
+            </Row>
+        }
+
+        <Row Class="rowMargin" Align="middle">
+            <Col Span="3">
+                <label style="font-size: 16px; margin-right: 5px;" for="confirmPasswordId">Are you:</label>
+            </Col>
+            <Col Span="21">
+                <RadioGroup @bind-Value="Role" ButtonStyle="RadioButtonStyle.Solid" Size="large" Class="radioGroupFullWidth">
+                    <Radio Class="radio50Width" RadioButton Value="@("Candidate")">Candidate</Radio>
+                    <Radio Class="radio50Width" RadioButton Value="@("Employer")">Employer</Radio>
+                </RadioGroup>
+            </Col>
+        </Row>
+        
+        <Row Class="rowMargin">
+            <Button
+                OnClick="ExecuteRegister"
+                Loading="@Loading"
+                Size="@ButtonSize.Large"
+                Disabled="@($"{Email}".Trim() == "" || 
+                            $"{Password}".Trim() == "" || 
+                            ErrorsEmail.Count != 0 || 
+                            ErrorsPassword.Count != 0 || 
+                            Password != ConfirmPassword)"
+                Type="@ButtonType.Primary"
+                HtmlType="submit"
+                Style="width: 200px; margin-left: calc(50% - 100px)">
+                Register
+            </Button>
+        </Row>
+        <Paragraph Style="text-align: center;">If you have an account please click <a href="/login">here</a> to log in.</Paragraph>
+    </Space>
+</Content>

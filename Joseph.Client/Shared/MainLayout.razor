@@ -1,0 +1,44 @@
+@using System.Security.Claims
+@using Joseph.Client.Services
+@inherits LayoutComponentBase
+@inject NavigationManager _navigationManager
+<AntContainer />
+<Layout Class="layout">
+    <Header Style="display: flex; align-items: center; justify-content: space-between">
+        <div @onclick="@(() => _navigationManager.NavigateTo("/"))">
+            <Title Level="4" Style="color: white; margin: 0; cursor: pointer;">
+                Joseph
+            </Title>
+        </div>
+        <div>
+            <AuthorizeView>
+                <Authorized>
+                    <Button Type="@ButtonType.Default" Shape="@ButtonShape.Circle" 
+                            Icon="@IconType.Outline.User" Style="margin-right: 10px;"
+                            OnClick="@(() => _navigationManager.NavigateTo("/account"))"></Button>
+                    <Button Type="@ButtonType.Primary" OnClick="AuthenticationService.Logout">Log out</Button>
+                </Authorized>
+                <NotAuthorized>
+                    <Button Type="@ButtonType.Primary" OnClick="@(() => _navigationManager.NavigateTo("/login"))">Login</Button>
+                </NotAuthorized>
+            </AuthorizeView>
+        </div>
+    </Header>
+    
+    <Content Style="min-height: calc(100vh - 64px); background: #f5f5f5; padding: 15px;">
+        @Body
+    </Content>
+
+</Layout>
+
+@code{
+    [Inject] AuthenticationStateProvider AuthenticationStateProvider { get; set; }
+    [Inject] IAuthenticationService AuthenticationService { get; set; }
+    ClaimsPrincipal user;
+    protected override async Task OnInitializedAsync()
+    {
+        AuthenticationState authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        user = authState.User;
+    }
+    
+}

@@ -1,0 +1,86 @@
+﻿@page "/vacancy/{Id}"
+@using Joseph.Client.Extensions
+@using Joseph.Data.Entities
+
+<Card Title="@job.Name" Style="max-width: 1000px; width:100%; margin: auto; margin-top: 35px;">
+    <Extra>
+        <AuthorizeView>
+            <Authorized>
+                <Button Icon="@IconType.Outline.Heart" Shape="@ButtonShape.Circle"></Button>
+            </Authorized>
+        </AuthorizeView>
+    </Extra>
+    <Body>
+    <Content>
+        <Row>
+            <AntDesign.Col Md="8"
+                           Span="24">
+                <Text Style="font-weight: bold;">Hours a week:</Text>
+                <Text>@job.HoursWeek.ToString()</Text>
+            </AntDesign.Col>
+            <AntDesign.Col Md="8"
+                           Span="24">
+                <Text Style="font-weight: bold;">Number of hired people:</Text>
+                <Text>@job.NumberOfHiredPeople.GetDisplayName()</Text>
+            </AntDesign.Col>
+            <AntDesign.Col Md="8"
+                           Span="24">
+                <Text Style="font-weight: bold;">Location:</Text>
+                <Text>@job.Location</Text>
+            </AntDesign.Col>
+        </Row>
+        <Row Style="margin-top: 15px;">
+            @foreach (JobType jobType in job.JobTypes)
+            {
+                <Tag>@jobType.Name</Tag>
+            }
+        </Row>
+        <Row Style="margin-top: 15px;">
+            <AntDesign.Col Span="24" Style="text-align: justify;">
+                <Text>
+                    @job.Description
+                </Text>
+            </AntDesign.Col>
+        </Row>
+        <AuthorizeView>
+            <Authorized>
+                <Row Style="margin-top: 15px;">
+                    <AntDesign.Col Lg="5" Sm="10" Xs="16">
+                        @{
+                            bool isSubmitted = _myAnswers
+                                .Contains(_myAnswers.FirstOrDefault(a => a.JobId == job.Id));
+                            bool isEmployer = user?.IsInRole("Employer") ?? false;
+                        }
+                        <Button Style="width: 100%;" Disabled="@(isSubmitted || isEmployer)" OnClick="() => _visible = true">
+                            @if (isEmployer)
+                            {
+                                <span>You are employer</span>
+                            }
+                            else
+                            {
+                                if (isSubmitted)
+                                {
+                                    <span>This job have answer</span>
+                                }
+                                else
+                                {
+                                    <span>Submit a Proposal</span>
+                                }
+                            }
+                        </Button>
+                    </AntDesign.Col>
+                </Row>
+            </Authorized>
+        </AuthorizeView>
+    </Content>
+    </Body>
+
+</Card>
+
+<Modal Title="@job.Name"
+       Visible="@_visible"
+       OnOk="@HandleOk"
+       OnCancel="@HandleCancel"
+       ConfirmLoading="@_confirmLoading">
+    <TextArea @bind-Value="_answer"  MinRows="5" Placeholder="Your message"></TextArea>
+</Modal>

@@ -1,0 +1,55 @@
+﻿<PageTitle>Candidate</PageTitle>
+
+<style>
+    .marginRow{
+        margin-top: 10px;
+    }
+</style>
+
+@if (user is not null)
+{
+    <Content Style="padding:20px 30px; background: white; border-radius: 5px; max-width: 1000px; margin: 20px auto auto;
+                  box-shadow: 0 10px 30px 3px rgb(0 0 0 / 5%);">
+        
+        <div style="display: flex; align-items: center; justify-content: space-between;">
+            <Title Level="2">Profile</Title>
+        </div>
+        <Row Gutter="16" Class="marginRow">
+            <AntDesign.Col Sm="12" Xs="24">
+                <Text>Name</Text>
+                <AntDesign.Input Size="@InputSize.Large" Placeholder="Name" TValue="string" @bind-Value="@user.Name" />
+            </AntDesign.Col>
+            <AntDesign.Col Sm="12" Xs="24">
+                <Text>Surname</Text>
+                <AntDesign.Input Size="@InputSize.Large" Placeholder="Surname" TValue="string" @bind-Value="@user.Surname" />
+            </AntDesign.Col>
+        </Row>
+        <Row Gutter="16" Class="marginRow">
+            <AntDesign.Col Sm="12" Xs="24">
+                <Text>Other name</Text>
+                <AntDesign.Input Size="@InputSize.Large" Placeholder="Other name" TValue="string" @bind-Value="@user.Other" />
+            </AntDesign.Col>
+        </Row>
+        <Row Gutter="16" Class="marginRow">
+            <AntDesign.Col Sm="12" Xs="24">
+                <Text>Email</Text>
+                <AntDesign.Input Size="@InputSize.Large" Placeholder="Email" Value="user.Email" Disabled />
+            </AntDesign.Col>
+            <AntDesign.Col Sm="12" Xs="24">
+                <Text>Phone number</Text>
+                <AntDesign.Input Size="@InputSize.Large" Placeholder="Phone number" TValue="string" @bind-Value="@user.PhoneNumber" />
+            </AntDesign.Col>
+        </Row>
+        <Row Gutter="16" Class="marginRow">
+            <AntDesign.Col Sm="12" Xs="24">
+                <Text>Birthday</Text>
+                <DatePicker Style="width:100%;" TValue="DateTime?" Size="@InputSize.Large" Picker="@DatePickerType.Date" @bind-Value="@user.Birthday"/>
+            </AntDesign.Col>
+        </Row>
+        <Row Class="marginRow" Style="margin-top: 20px;">
+            <AntDesign.Col Span="8">
+                <Button Loading="_loading" Type="primary" Size="@InputSize.Large" OnClick="UpdateUser">Update information</Button>
+            </AntDesign.Col>
+        </Row>
+    </Content>
+}

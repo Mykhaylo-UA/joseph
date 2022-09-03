@@ -1,0 +1,171 @@
+﻿
+@using Joseph.Data.Entities
+@using Joseph.Enums
+@using Joseph.Client.Extensions
+
+<style>
+    .wrapClassName{
+        max-width: 700px !important;
+        width: 100% !important;
+    }
+</style>
+
+<PageTitle>Employer</PageTitle>
+
+<Content Style="padding:10px 30px; background: white; border-radius: 5px; max-width: 1200px; margin: 20px auto auto;
+     box-shadow: 0 10px 30px 3px rgb(0 0 0 / 5%);">
+    <Row Style="display: flex; justify-content: space-between; align-items: center;" OnBreakpoint="BreakpointHandler">
+        <Title Level="2">Vacancies</Title>
+        <Button Type="@ButtonType.Primary" Icon="@IconType.Outline.AppstoreAdd" @onclick="_ => open()">@(_breakpointType == BreakpointType.Sm || _breakpointType == BreakpointType.Xs ? "Add" : "Add new vacancy")</Button>
+    </Row>
+    @if (_jobs is not null)
+    {
+        <Table TItem="Job" DataSource="@_jobs" Responsive>
+            <PropertyColumn Property="@(c => c.Name)"/>
+            <PropertyColumn Property="@(c => c.Location)"/>
+
+            <PropertyColumn Property="@(c => c.NumberOfHiredPeople)" Width="15%" Title="Hired people">
+                @context.NumberOfHiredPeople.GetDisplayName()
+            </PropertyColumn>
+            <PropertyColumn Property="@(c => c.HoursWeek)" Title="Hours a week"/>
+            <PropertyColumn Property="@(c => c.JobTypes)" Width="15%" Title="Job types">
+                @foreach (JobType jobType in context.JobTypes)
+                {
+                    <Tag>@jobType.Name</Tag>
+                }
+            </PropertyColumn>
+            <ActionColumn Width="10%">
+                <Space>
+                    <SpaceItem>
+                        <Tooltip Placement="Placement.TopLeft" Title="@("Watch answers")" ArrowPointAtCenter="true">
+                            @{
+                                context.Answers ??= new();
+                            }
+                            <Badge Count="@context.Answers.Count" Style="z-index: 2" OverflowCount="9">
+                                <Button Icon="@IconType.Outline.Subnode" OnClick="() => SelectJobAnswers(context.Id)"></Button>
+                            </Badge>
+                        </Tooltip>
+                    </SpaceItem>
+                    <SpaceItem>
+                        <Tooltip Placement="Placement.TopLeft" Title="@("Edit vacancy")" ArrowPointAtCenter="true">
+                            <Button Icon="@IconType.Outline.Edit" OnClick="@(() => EditJob(context.Id))"></Button>
+                        </Tooltip>
+                    </SpaceItem>
+                    <SpaceItem>
+                        <Popconfirm Title="Are you sure delete this task?"
+                                    OnConfirm="() => DeleteVacancy(context.Id)"
+                                    OkText="Yes"
+                                    CancelText="No">
+                            <Tooltip Placement="Placement.TopLeft" Title="@("Delete vacancy")" ArrowPointAtCenter="true">
+                                <Button Loading="_loadingDelete" Icon="@IconType.Outline.Delete" Danger></Button>
+                            </Tooltip>
+                        </Popconfirm>
+                    </SpaceItem>
+                </Space>
+            </ActionColumn>
+        </Table>
+    }
+</Content>
+
+
+<Drawer Closable="true" WrapClassName="wrapClassName" Visible="visible" Title='("New vacancy")' OnClose="_=>close()">
+    <Template style="height:90%">
+        <Row Gutter="16">
+            <AntDesign.Col Span="24">
+                <Text>Name</Text>
+                <Input Placeholder="Please enter vacancy name" TValue="string" @bind-Value="@_newJob.Name" />
+            </AntDesign.Col>
+        </Row>
+        <br />
+        <Row Gutter="16">
+            <AntDesign.Col Sm="12" Xs="24">
+                <Text>Location</Text>
+                <AntDesign.Input Placeholder="Location" TValue="string" @bind-Value="@_newJob.Location" />
+                
+            </AntDesign.Col>
+        </Row>
+        <br />
+        <Row Gutter="16">
+            <AntDesign.Col Sm="18" Xs="24">
+                <Text>Type of vacancy</Text>
+                <SimpleSelect Values="@(_newJob.JobTypes.Select(j=>j.Id.ToString()))" 
+                              Mode="multiple" OnSelectedItemsChanged="HandleItemsChange"
+                              Placeholder="Type of vacancy"
+                >
+                    <SelectOptions>
+                        @foreach (JobType jobType in _jobTypes)
+                        {
+                            <SimpleSelectOption Value="@($"{jobType.Id}")" Label="@($"{jobType.Name}")"></SimpleSelectOption>
+                        }
+                    </SelectOptions>
+                </SimpleSelect>
+            </AntDesign.Col>
+            <AntDesign.Col Sm="6" Xs="24">
+                <Text>Hours a week</Text>
+                <AntDesign.InputNumber
+                    @bind-Value="_newJob.HoursWeek"
+                    Min="1" Max="@(7 * 24)" DefaultValue="10" PlaceHolder="Hours a week" Style="width:100%;"/>
+            </AntDesign.Col>
+        </Row>
+
+        <br />
+        
+        <Row>
+            <AntDesign.Col Sm="12" Xs="24">
+                <Text>Number of hired people</Text>
+                <EnumSelect  TEnum="NumberOfHiredPeople"
+                             OnSelectedItemChanged="HandleItemsHiredChange" 
+                             Placeholder="Number of hired people"
+                             DefaultValue="_newJob.NumberOfHiredPeople"
+                             Value="_newJob.NumberOfHiredPeople">
+                </EnumSelect >
+            </AntDesign.Col>
+        </Row>
+        
+        <br />
+        <Row>
+            <AntDesign.Col Span="24">
+                <Text>Description</Text>
+                <TextArea @bind-Value="@_newJob.Description" Placeholder="Please enter your description">
+
+                    </TextArea>
+            </AntDesign.Col>
+        </Row>
+        <br />
+        <Row>
+            <AntDesign.Col Md="new EmbeddedProperty(){Span=3, Offset = 18}" Span="8" Offset="8">
+                <Button Style="width: 100%;" Type="default" Loading="_loadingDrawer" OnClick="close">Cancel</Button>
+            </AntDesign.Col>
+            <AntDesign.Col Md="3" Span="8">
+                @if (_isEdit)
+                {
+                    <Button Style="width: 100%;" Type="primary" Loading="_loadingDrawer" OnClick="EditVacancies">Edit</Button>  
+                }
+                else
+                {
+                    <Button Style="width: 100%;" Type="primary" OnClick="AddVacancies">Submit</Button>  
+                }
+            </AntDesign.Col>
+        </Row>
+    </Template>
+</Drawer>
+
+
+<Modal Title="Answers"
+       Visible="@_visible"
+       OnOk="() => _visible=false"
+       OnCancel="() => _visible=false"
+       >
+    @foreach (Answer answer in _selectJob.Answers)
+    {
+        <Card Title="@answer.UserDisplay">
+            <Extra>
+            </Extra>
+            <Body>
+            <Content>
+                @answer.Description
+            </Content>
+            </Body>
+        </Card>
+    }
+</Modal>
